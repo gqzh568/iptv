@@ -325,7 +325,7 @@
     },
     {
       "key" : "alllive",
-      "name" : "🎮一直播┃直播",
+      "name" : "🎮游戏直播┃直播",
       "type" : 3,
       "api" : "csp_AllliveGuard",
       "style" : {
@@ -485,38 +485,6 @@
       }
     },
     {
-      "key" : "Bili",
-      "name" : "🅱哔哔合集┃弹幕",
-      "type" : 3,
-      "api" : "csp_BiliGuard",
-      "style" : {
-        "type" : "rect",
-        "ratio" : 1.597
-      },
-      "searchable" : 1,
-      "quickSearch" : 0,
-      "changeable" : 0,
-      "ext" : {
-        "json" : "https://nos.netease.com/ysf/0075389dca9afadd4614e9713765ff17.txt"
-      }
-    },
-    {
-      "key" : "Biliych",
-      "name" : "🅱哔哔演唱会┃弹幕",
-      "type" : 3,
-      "api" : "csp_BiliGuard",
-      "style" : {
-        "type" : "rect",
-        "ratio" : 1.597
-      },
-      "searchable" : 0,
-      "quickSearch" : 0,
-      "changeable" : 0,
-      "ext" : {
-        "json" : "https://nos.netease.com/ysf/6496356286589c68f52c2f99c0c674c7.txt"
-      }
-    },
-    {
       "key" : "dr_兔小贝",
       "name" : "📚儿童┃启蒙",
       "type" : 3,
@@ -648,6 +616,12 @@
       "type": 0,
       "url": "https://tv.711933.xyz/iptv1.m3u",
       "playerType": 2
+    },
+    {
+      "name" : "电视直播4",
+      "type" : 0,
+      "url" : "https://nos.netease.com/ysf/3d75a78a0fc7ede372c03598d6d10367.m3u",
+      "playerType" : 2
     },
     {
       "name": "广西移动",
