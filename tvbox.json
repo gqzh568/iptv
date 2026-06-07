@@ -29,7 +29,7 @@
     },
     {
       "key" : "玩偶",
-      "name" : "👽玩偶哥哥┃4K弹幕",
+      "name" : "🚀玩偶┃4K弹幕",
       "type" : 3,
       "api" : "csp_WoGGGuard",
       "timeout" : 30,
@@ -42,24 +42,10 @@
     },
     {
       "key" : "YGP",
-      "name" : "🚀叨观荐影┃预告片",
+      "name" : "🚀荐影┃预告片",
       "type" : 3,
       "api" : "csp_YGPGuard",
       "searchable" : 0,
-      "quickSearch" : 0,
-      "changeable" : 0
-    },
-    {
-      "key" : "MTV1",
-      "name" : "🎙️易听音乐┃带歌词",
-      "type" : 3,
-      "api" : "csp_MusicGuard",
-      "style" : {
-        "type" : "rect",
-        "ratio" : 1
-      },
-      "playerType" : 2,
-      "searchable" : 1,
       "quickSearch" : 0,
       "changeable" : 0
     },
@@ -313,7 +299,7 @@
     },
     {
       "key" : "超全",
-      "name" : "⚽吃瓜┃看球",
+      "name" : "⚽超全┃看球",
       "type" : 3,
       "api" : "csp_LiveGzGuard",
       "searchable" : 0,
@@ -354,19 +340,6 @@
       "ext" : {
         "json" : "https://nos.netease.com/ysf/5af5fbe12a88b7c45aa1c21e6551826c.txt"
       }
-    },
-    {
-      "key" : "有声小说",
-      "name" : "🎧有声┃小说",
-      "type" : 3,
-      "api" : "csp_Tingshu275Guard",
-      "style" : {
-        "type" : "rect",
-        "ratio" : 1
-      },
-      "searchable" : 0,
-      "quickSearch" : 0,
-      "changeable" : 0
     },
     {
       "key" : "Aid",
@@ -602,7 +575,7 @@
     {
       "name": "电视直播1",
       "type": 0,
-      "url": "https://codeberg.org/Jsnzkpg/Jsnzkpg/raw/branch/Jsnzkpg/Jsnzkpg1.m3u",
+      "url": "https://codeberg.org/Jsnzkpg/Jsnzkpg/raw/Jsnzkpg/Jsnzkpg1.m3u",
       "playerType": 2
     },
     {
