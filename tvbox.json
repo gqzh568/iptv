@@ -4,7 +4,7 @@
   "sites" : [
     {
       "key" : "点我切源",
-      "name" : "甘总尊享",
+      "name" : "VIP尊享",
       "type" : 3,
       "api" : "csp_DouDouGuard",
       "indexs" : 1,
@@ -571,7 +571,7 @@
     {
       "name": "电视直播1",
       "type": 0,
-      "url": "https://codeberg.org/Jsnzkpg/Jsnzkpg/raw/Jsnzkpg/Jsnzkpg1.m3u",
+      "url": "https://live.445569.xyz/live.m3u",
       "playerType": 2
     },
     {
