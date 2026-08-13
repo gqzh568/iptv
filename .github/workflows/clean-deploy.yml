@@ -10,19 +10,18 @@ jobs:
       contents: read
     steps:
       - name: Clean deployments
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
-            // 直接从 github.context.payload 获取
-            const owner = github.context.repo.owner;
-            const repo = github.context.repo.repo;
-            console.log(`仓库 owner: ${owner}, repo: ${repo}`);
+            const fullRepo = '${{ github.repository }}';
+            const [owner, repo] = fullRepo.split('/');
+            console.log(`owner=${owner} repo=${repo}`);
 
             const deployments = await github.paginate(
               github.rest.repos.listDeployments,
               { owner, repo, per_page: 100 }
             );
-            console.log(`找到部署记录总数：${deployments.length}`);
+            console.log(`部署记录总数: ${deployments.length}`);
 
             for (const d of deployments) {
               try {
@@ -40,8 +39,8 @@ jobs:
                   repo,
                   deployment_id: d.id
                 });
-                console.log("✅已删除 deployment id:", d.id);
-              } catch (err) {
-                console.warn("⚠️删除失败 id=" + d.id, err.message);
+                console.log("✅ 删除成功 id:", d.id);
+              } catch (e) {
+                console.warn("⚠️跳过 id:" + d.id, e.message);
               }
             }
