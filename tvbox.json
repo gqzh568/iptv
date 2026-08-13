@@ -4,7 +4,7 @@
   "sites" : [
     {
       "key" : "点我切源",
-      "name" : "VIP尊享",
+      "name" : "甘总尊享",
       "type" : 3,
       "api" : "csp_DouDouGuard",
       "indexs" : 1,
