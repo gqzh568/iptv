@@ -6,28 +6,28 @@
 <div align="center">一个可高度自定义的IPTV接口更新项目📺，自定义频道菜单，自动获取直播源，测速验效后生成可用的结果，实现『✨秒播级体验🚀』</div>
 <br>
 <p align="center">
-  <a href="https://github.com/gqzh568/iptv-api/releases/latest">
-    <img src="https://img.shields.io/github/v/release/gqzh568/iptv-api" />
+  <a href="https://github.com/Guovin/iptv-api/releases/latest">
+    <img src="https://img.shields.io/github/v/release/Guovin/iptv-api" />
   </a>
   <a href="https://www.python.org/">
     <img src="https://img.shields.io/badge/python-%20%3D%203.13-47c219" />
   </a>
-  <a href="https://github.com/gqzh568/iptv-api/releases/latest">
-    <img src="https://img.shields.io/github/downloads/gqzh568/iptv-api/total" />
+  <a href="https://github.com/Guovin/iptv-api/releases/latest">
+    <img src="https://img.shields.io/github/downloads/Guovin/iptv-api/total" />
   </a>
   <a href="https://hub.docker.com/repository/docker/guovern/iptv-api">
     <img src="https://img.shields.io/docker/pulls/guovern/iptv-api" />
   </a>
-  <a href="https://github.com/gqzh568/iptv-api/fork">
-    <img src="https://img.shields.io/github/forks/gqzh568/iptv-api" />
+  <a href="https://github.com/Guovin/iptv-api/fork">
+    <img src="https://img.shields.io/github/forks/Guovin/iptv-api" />
   </a>
 </p>
 
 [English](./README_en.md) | 中文
 
-🎉💻 [IPTV-Web](https://github.com/gqzh568/iptv-web)：IPTV电视直播源管理平台，支持在线播放等功能，开发中...
+🎉💻 [IPTV-Web](https://github.com/Guovin/iptv-web)：IPTV电视直播源管理平台，支持在线播放等功能，开发中...
 
-💖 [频道别名收集计划](https://github.com/gqzh568/iptv-api/discussions/1082)
+💖 [频道别名收集计划](https://github.com/Guovin/iptv-api/discussions/1082)
 
 - [✅ 核心特性](#核心特性)
 - [🔗 最新结果](#最新结果)
@@ -56,7 +56,7 @@
 
 📍订阅源来自：
 
-- [gqzh568/iptv-database](https://github.com/gqzh568/iptv-database)
+- [Guovin/iptv-database](https://github.com/Guovin/iptv-database)
 - [iptv-org/iptv](https://github.com/iptv-org/iptv)
 - [suxuang/myIPTV](https://github.com/suxuang/myIPTV)
 - [kimwang1978/collect-tv-txt](https://github.com/kimwang1978/collect-tv-txt)
@@ -91,25 +91,25 @@
 - 默认
 
 ```bash
-https://raw.githubusercontent.com/gqzh568/iptv-api/output/result.m3u
+https://raw.githubusercontent.com/Guovin/iptv-api/output/result.m3u
 ```
 
 - IPv6
 
 ```bash
-https://raw.githubusercontent.com/gqzh568/iptv-api/output/ipv6/result.m3u
+https://raw.githubusercontent.com/Guovin/iptv-api/output/ipv6/result.m3u
 ```
 
 - IPv4
 
 ```bash
-https://raw.githubusercontent.com/gqzh568/iptv-api/output/ipv4/result.m3u
+https://raw.githubusercontent.com/Guovin/iptv-api/output/ipv4/result.m3u
 ```
 
 ### 点播源
 
 ```bash
-https://raw.githubusercontent.com/gqzh568/iptv-api/source.json
+https://raw.githubusercontent.com/Guovin/iptv-api/source.json
 ```
 
 ## 配置
@@ -242,7 +242,7 @@ pipenv run service
 
 ### GUI 软件
 
-1. 下载[IPTV-API 更新软件](https://github.com/gqzh568/iptv-api/releases)，打开软件，点击启动，即可进行更新
+1. 下载[IPTV-API 更新软件](https://github.com/Guovin/iptv-api/releases)，打开软件，点击启动，即可进行更新
 
 2. 或者在项目目录下运行以下命令，即可打开 GUI 软件：
 
@@ -347,7 +347,7 @@ docker run -d -p 8000:8000 guovern/iptv-api
 
 ## Star统计
 
-[![Star统计](https://api.star-history.com/svg?repos=gqzh568/iptv-api&type=Date)](https://star-history.com/#gqzh568/iptv-api&Date)
+[![Star统计](https://api.star-history.com/svg?repos=Guovin/iptv-api&type=Date)](https://star-history.com/#Guovin/iptv-api&Date)
 
 ## 免责声明
 
@@ -355,4 +355,4 @@ docker run -d -p 8000:8000 guovern/iptv-api
 
 ## 许可证
 
-[MIT](./LICENSE) License &copy; 2024-PRESENT [Govin](https://github.com/gGuovin)
+[MIT](./LICENSE) License &copy; 2024-PRESENT [Govin](https://github.com/Guovin)
