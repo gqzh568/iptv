@@ -85,35 +85,31 @@
 | **多种运行方式**   |  ✅   | 支持工作流、命令行、GUI 软件、Docker (amd64/arm64/arm v7) |
 | **更多功能**     |  ✨   | 详见[配置参数](#配置)章节                              |
 
-## 最新结果
-
-> [!IMPORTANT]\
-> 以下地址国内可能无法稳定访问，推荐在前拼接代理地址使用，公众号可回复`cdn`获取
 
 ### 直播源
 
 - 默认
 
 ```bash
-https://raw.githubusercontent.com/gqzh568/iptv-api/gd/output/result.m3u
+https://raw.githubusercontent.com/gqzh568/iptv-api/output/result.m3u
 ```
 
 - IPv6
 
 ```bash
-https://raw.githubusercontent.com/gqzh568/iptv-api/gd/output/ipv6/result.m3u
+https://raw.githubusercontent.com/gqzh568/iptv-api/output/ipv6/result.m3u
 ```
 
 - IPv4
 
 ```bash
-https://raw.githubusercontent.com/gqzh568/iptv-api/gd/output/ipv4/result.m3u
+https://raw.githubusercontent.com/gqzh568/iptv-api/output/ipv4/result.m3u
 ```
 
 ### 点播源
 
 ```bash
-https://raw.githubusercontent.com/gqzh568/iptv-api/gd/source.json
+https://raw.githubusercontent.com/gqzh568/iptv-api/source.json
 ```
 
 ## 配置
