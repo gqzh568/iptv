@@ -2,5 +2,5 @@
 # This is a list of subscription sources, with one subscription address per line
 
 
-http://47.120.41.246:8025/vip/jar/zb.php
-
+https://live.hacks.tools/tv/iptv4.m3u
+https://tv.711933.xyz/iptv.m3u
