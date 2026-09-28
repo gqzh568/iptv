@@ -7,3 +7,7 @@ https://raw.githubusercontent.com/iptv-org/iptv/master/streams/cn.m3u
 https://raw.githubusercontent.com/suxuang/myIPTV/main/ipv4.m3u
 https://raw.githubusercontent.com/kimwang1978/collect-tv-txt/main/others_output.txt
 https://raw.githubusercontent.com/vbskycn/iptv/master/tv/iptv4.txt
+https://cdn.jsdelivr.net/gh/Guovin/iptv-api@gd/output/result.m3u
+http://47.120.41.246:8025/vip/jar/zb.php
+https://live.hacks.tools/tv/iptv4.m3
+http://193.123.86.190:14888/TV/iptv.php
