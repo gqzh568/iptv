@@ -3,6 +3,7 @@
 
 
 https://gh-proxy.com/raw.githubusercontent.com/vbskycn/iptv/refs/heads/master/tv/iptv4.m3u
-
-
-
+https://raw.githubusercontent.com/YueChan/Live/refs/heads/main/APTV.m3u
+https://raw.githubusercontent.com/YanG-1989/m3u/main/Gather.m3u
+https://raw.githubusercontent.com/ssili126/tv/main/itvlist.txt
+https://guovin.github.io/iptv-api/result.m3u
