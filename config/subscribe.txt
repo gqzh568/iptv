@@ -7,6 +7,10 @@ https://guovin.github.io/iptv-api/result.m3u
 https://raw.githubusercontent.com/vbskycn/iptv/refs/heads/master/tv/iptv4.m3u
 https://raw.githubusercontent.com/zzgpy1/ITV/refs/heads/main/output/tv.m3u
 https://raw.githubusercontent.com/CCSH/IPTV/refs/heads/main/live.m3u
+http://193.123.86.190:14888/TV/iptv.php
+https://nos.netease.com/ysf/3d75a78a0fc7ede372c03598d6d10367.m3u
+http://raw.githubusercontent.com/develop202/migu_video/refs/heads/main/interface.txt
+https://raw.githubusercontent.com/Kimentanm/aptv/master/m3u/iptv.m3u
 
 
 
