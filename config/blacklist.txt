@@ -3,6 +3,7 @@
 /audio/
 bxtv.3a.ink
 txmov2.a.kwimgs.com
+.mp4
 
 
 
