@@ -3,8 +3,10 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  pages: write
+  id-token: write
 concurrency:
-  group: playlist-release-${{ github.repository }}
+  group: "pages"
   cancel-in-progress: false
 jobs:
   generate:
@@ -12,6 +14,8 @@ jobs:
     timeout-minutes: 300
     permissions:
       contents: read
+      pages: write
+      id-token: write
     outputs:
       source_sha: ${{ steps.source.outputs.sha }}
       tag: ${{ steps.release.outputs.tag }}
@@ -37,7 +41,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/iptv-config-before"
           cp -a config/. "$RUNNER_TEMP/iptv-config-before/"
       - name: Remove generated files from the checkout
-        run: rm -rf -- output release-assets
+        run: rm -rf -- output release-assets pages-site
       - name: Restore result history
         id: restore-state
         uses: actions/cache/restore@v4
@@ -63,7 +67,6 @@ jobs:
       - name: Generate playlist results
         id: generate
         run: |
-          echo "pages_base_url=" >> "$GITHUB_OUTPUT"
           pipenv run dev
       - name: Create release metadata
         id: release
@@ -74,7 +77,7 @@ jobs:
           echo "tag=${release_metadata[0]}" >> "$GITHUB_OUTPUT"
           echo "title=${release_metadata[1]}" >> "$GITHUB_OUTPUT"
           echo "generated_at=${release_metadata[2]}" >> "$GITHUB_OUTPUT"
-      - name: Prepare public release assets
+      - name: Prepare public release assets & pages site
         id: assets
         run: |
           final_file="$(pipenv run python -c 'from utils.config import config; print(config.final_file)')"
@@ -82,7 +85,9 @@ jobs:
             --final-file "$final_file" \
             --destination release-assets \
             --generated-at "${{ steps.release.outputs.generated_at }}" \
-            --release-tag "${{ steps.release.outputs.tag }}"
+            --release-tag "${{ steps.release.outputs.tag }}" \
+            --pages-destination pages-site \
+            --pages-base-url "https://gqzh568.github.io/iptv/"
           echo "final_file=$final_file" >> "$GITHUB_OUTPUT"
       - name: Delete zero-size files before upload
         run: |
@@ -94,6 +99,12 @@ jobs:
           path: release-assets
           if-no-files-found: error
           retention-days: 1
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-site
       - name: Report non-persistent configuration changes
         run: |
           if ! diff -qr "$RUNNER_TEMP/iptv-config-before" config >/dev/null; then
@@ -126,11 +137,15 @@ jobs:
       - name: Add subscription links to summary
         env:
           RELEASE_BASE: https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}
+          PAGES_BASE: https://gqzh568.github.io/iptv/
         run: |
           {
             echo "### Published playlist"
             echo
-            echo "下载链接 / Download links"
+            echo "🌐 Pages网页：$PAGES_BASE"
+            echo "📺 订阅地址（永久不变）：${PAGES_BASE}result.m3u"
+            echo
+            echo "Release下载链接："
             echo "- Release TXT: $RELEASE_BASE/result.txt"
             if [[ -f release-assets/result.m3u ]]; then
               echo "- Release M3U: $RELEASE_BASE/result.m3u"
@@ -138,18 +153,23 @@ jobs:
             if [[ -f release-assets/epg.gz ]]; then
               echo "- Release EPG: $RELEASE_BASE/epg.gz"
             fi
-            if [[ -f release-assets/log.log ]]; then
-              echo "- Release runtime log: $RELEASE_BASE/log.log"
-            fi
-            if [[ -f release-assets/result.log ]]; then
-              echo "- Release result log: $RELEASE_BASE/result.log"
-            fi
-            if [[ -f release-assets/unmatch.log ]]; then
-              echo "- Release unmatched channels: $RELEASE_BASE/unmatch.log"
-            fi
             echo
             echo "Generated from \`${{ steps.assets.outputs.final_file }}\` without creating a Git commit."
           } >> "$GITHUB_STEP_SUMMARY"
+  deploy-pages:
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
   publish-release:
     needs: generate
     runs-on: ubuntu-latest
@@ -179,7 +199,6 @@ jobs:
               "主仓库结果仅用于功能测试，不保证可用性。实际使用请 Fork 项目并运行自己的工作流。" \
               "The upstream results are for testing only. For actual use, fork and run your own workflow."
           fi
-          # 删除0字节文件
           find release-assets -maxdepth 1 -type f -size 0c -delete
           mapfile -d '' local_assets < <(find release-assets -maxdepth 1 -type f -print0 | sort -z)
           gh release create "$RELEASE_TAG" "${local_assets[@]}" \
