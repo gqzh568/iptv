@@ -51,9 +51,12 @@ jobs:
       - name: Prepare public release assets & pages site
         id: assets
         run: |
-          mkdir -p release-assets pages-site
-          cp *.m3u *.txt *.jsonl *.log release-assets/ || true
-          cp index.html result.m3u pages-site/ || true
+          final_file="result.m3u"
+          python scripts/publish_results.py \
+            --final-file "$final_file" \
+            --destination release-assets \
+            --pages-destination pages-site \
+            --pages-base-url "https://iptv.711933.xyz/"
           echo "final_file=pages-site/result.m3u" >> $GITHUB_OUTPUT
 
       - name: Delete zero-size files before upload
@@ -114,7 +117,7 @@ jobs:
           release_title="$RELEASE_TITLE"
           printf -v release_notes '%s\n\n%s' \
             "手动生成 IPTV 源，文件保存在本次 Release。" \
-            "网页同步更新至 iptv.711933.xyz"
+            "网页同步更新至 https://iptv.711933.xyz/"
           find release-assets -maxdepth 1 -type f -size 0c -delete
           mapfile -d '' local_assets < <(find release-assets -maxdepth 1 -type f -print0 | sort -z)
           gh release create "$RELEASE_TAG" "${local_assets[@]}" \
