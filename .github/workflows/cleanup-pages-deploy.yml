@@ -1,0 +1,54 @@
+name: Cleanup Pages Deployment History
+on:
+  workflow_dispatch: # 支持手动点按钮立即清理
+  schedule:
+    # 每周一 北京时间04点执行 → UTC 周日20点
+    - cron: '0 20 * * 0'
+
+permissions:
+  contents: read
+  deployments: write # 必须，用来读写部署记录
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install GitHub CLI
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g @githubcli/cli
+
+      - name: Fetch all github-pages deployments
+        id: fetch_deploys
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # 获取所有github-pages环境部署，按时间倒序
+          deploys=$(gh api --paginate /repos/$GH_REPO/environments/github-pages/deployments | jq -r '.[].id')
+          echo "DEPLOY_LIST<<EOF" >> $GITHUB_OUTPUT
+          echo "$deploys" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Delete old deployments (keep latest one)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          deploy_arr=(${{ steps.fetch_deploys.outputs.DEPLOY_LIST }})
+          total=${#deploy_arr[@]}
+          echo "一共找到 $total 条部署记录"
+          if (( total <= 1 )); then
+            echo "记录不足2条，无需清理"
+            exit 0
+          fi
+          # 跳过第一条（最新），剩下全部删除
+          for ((i=1; i<total; i++)); do
+            id=${deploy_arr[$i]}
+            echo "将部署 $id 设置为 inactive"
+            gh api --method POST /repos/$GH_REPO/deployments/$id/status -f state=inactive
+            echo "删除部署记录 $id"
+            gh api --method DELETE /repos/$GH_REPO/deployments/$id
+          done
+          echo "清理完成，保留最新一条部署记录"
