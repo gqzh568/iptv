@@ -10,7 +10,7 @@ events {
 
 rtmp {
     server {
-        listen 1935;
+        listen ${NGINX_RTMP_PORT};
 
         application hls {
             live on;
@@ -18,17 +18,18 @@ rtmp {
             hls_path /tmp/hls;
             hls_fragment 3s;
             hls_playlist_length 60;
-            on_done    http://127.0.0.1:5180/on_done;
+            on_done    http://127.0.0.1:${APP_PORT}/on_done;
         }
     }
 }
 
 http {
     server {
-        listen 8080;
+        listen ${NGINX_HTTP_PORT};
+        ${IPV6_HTTP_LISTEN}
 
         location / {
-            proxy_pass http://127.0.0.1:5180;
+            proxy_pass http://127.0.0.1:${APP_PORT};
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -62,7 +63,7 @@ http {
         }
 
         location ~ ^/hls/(.+)\.m3u8$ {
-            proxy_pass http://127.0.0.1:5180/hls_proxy/$1;
+            proxy_pass http://127.0.0.1:${APP_PORT}/hls_proxy/$1;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
