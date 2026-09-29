@@ -89,7 +89,7 @@ jobs:
             --generated-at "${{ steps.release.outputs.generated_at }}" \
             --release-tag "${{ steps.release.outputs.tag }}" \
             --pages-destination pages-site \
-            --pages-base-url "https://iptv.922666.xyz/"
+            --pages-base-url "https://iptv.711933.xyz/"
           echo "final_file=$final_file" >> "$GITHUB_OUTPUT"
       - name: Delete zero-size files before upload
         run: |
@@ -110,7 +110,7 @@ jobs:
       - name: Add subscription links to summary
         env:
           RELEASE_BASE: https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}
-          PAGES_BASE: https://iptv.922666.xyz/
+          PAGES_BASE: https://iptv.711933.xyz/
         run: |
           {
             echo "### Published playlist"
@@ -164,7 +164,7 @@ jobs:
           release_title="$RELEASE_TITLE"
           printf -v release_notes '%s\n\n%s' \
             "手动生成 IPTV 源，文件保存在本次 Release。" \
-            "网页同步更新至 iptv.922666.xyz"
+            "网页同步更新至 iptv.711933.xyz"
           find release-assets -maxdepth 1 -type f -size 0c -delete
           mapfile -d '' local_assets < <(find release-assets -maxdepth 1 -type f -print0 | sort -z)
           gh release create "$RELEASE_TAG" "${local_assets[@]}" \
