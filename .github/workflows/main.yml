@@ -87,7 +87,7 @@ jobs:
             --generated-at "${{ steps.release.outputs.generated_at }}" \
             --release-tag "${{ steps.release.outputs.tag }}" \
             --pages-destination pages-site \
-            --pages-base-url "https://gqzh568.github.io/iptv/"
+            --pages-base-url "https://iptv.711933.xyz/"
           echo "final_file=$final_file" >> "$GITHUB_OUTPUT"
       - name: Delete zero-size files before upload
         run: |
@@ -137,7 +137,7 @@ jobs:
       - name: Add subscription links to summary
         env:
           RELEASE_BASE: https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}
-          PAGES_BASE: https://gqzh568.github.io/iptv/
+          PAGES_BASE: https://iptv.711933.xyz/
         run: |
           {
             echo "### Published playlist"
