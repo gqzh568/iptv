@@ -89,7 +89,7 @@ jobs:
             --generated-at "${{ steps.release.outputs.generated_at }}" \
             --release-tag "${{ steps.release.outputs.tag }}" \
             --pages-destination pages-site \
-            --pages-base-url "https://iptv.711933.xyz/"
+            --pages-base-url "https://iptv.922666.xyz/"
           echo "final_file=$final_file" >> "$GITHUB_OUTPUT"
       - name: Delete zero-size files before upload
         run: |
@@ -101,18 +101,16 @@ jobs:
           path: release-assets
           if-no-files-found: error
           retention-days: 1
-      # ==========【下面两行被注释，不上传Pages制品，不会触发pages-build-deployment】==========
-      # - name: Setup Pages
-      #   uses: actions/configure-pages@v5
-      # - name: Upload Pages artifact
-      #   uses: actions/upload-pages-artifact@v3
-      #   with:
-      #     path: pages-site
-      # ======================================================================================
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-site
       - name: Add subscription links to summary
         env:
           RELEASE_BASE: https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}
-          PAGES_BASE: https://iptv.711933.xyz/
+          PAGES_BASE: https://iptv.922666.xyz/
         run: |
           {
             echo "### Published playlist"
@@ -128,24 +126,21 @@ jobs:
             if [[ -f release-assets/epg.gz ]]; then
               echo "- Release EPG: $RELEASE_BASE/epg.gz"
             fi
-            echo
-            echo "⚠️ 当前：Pages上传步骤已注释，网页不会更新！仅生成Release备份"
           } >> "$GITHUB_STEP_SUMMARY"
-  # deploy-pages job 也一并注释，因为没有pages制品，这个job已经没有意义
-  # deploy-pages:
-  #   needs: generate
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   permissions:
-  #     pages: write
-  #     id-token: write
-  #   environment:
-  #     name: github-pages
-  #     url: ${{ steps.deployment.outputs.page_url }}
-  #   steps:
-  #     - name: Deploy to GitHub Pages
-  #       id: deployment
-  #       uses: actions/deploy-pages@v4
+  deploy-pages:
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
   publish-release:
     needs: generate
     runs-on: ubuntu-latest
@@ -169,7 +164,7 @@ jobs:
           release_title="$RELEASE_TITLE"
           printf -v release_notes '%s\n\n%s' \
             "手动生成 IPTV 源，文件保存在本次 Release。" \
-            "Pages网页部署步骤已注释，本次不会更新网页。"
+            "网页同步更新至 iptv.922666.xyz"
           find release-assets -maxdepth 1 -type f -size 0c -delete
           mapfile -d '' local_assets < <(find release-assets -maxdepth 1 -type f -print0 | sort -z)
           gh release create "$RELEASE_TAG" "${local_assets[@]}" \
