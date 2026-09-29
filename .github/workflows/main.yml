@@ -2,83 +2,163 @@ name: Generate playlist manually
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 19 * * *'   # UTC 19点 = 北京时间 03:00
-
+    - cron: '0 22 * * *'   # UTC 22点 = 北京时间 06:00
+    - cron: '0 10 * * *'   # UTC 10点 = 北京时间 18:00
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: "pages"
   cancel-in-progress: false
-
 jobs:
   generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 300
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     outputs:
-      tag: ${{ steps.release_meta.outputs.tag }}
-      release_title: ${{ steps.release_meta.outputs.title }}
-      source_sha: ${{ github.sha }}
+      source_sha: ${{ steps.source.outputs.sha }}
+      tag: ${{ steps.release.outputs.tag }}
+      release_title: ${{ steps.release.outputs.title }}
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      - name: Checkout source and configuration
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Load upstream configuration
+        if: github.repository_owner == 'Guovin'
+        run: |
+          git fetch --depth=1 origin gd
+          git archive FETCH_HEAD config | tar -x
+      - name: Record checked-out revision and state key
+        id: source
+        env:
+          CONFIG_HASH: ${{ hashFiles('config/**/*.ini', 'config/**/*.txt', 'config/**/*.m3u') }}
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "state_prefix=playlist-state-v1-${RUNNER_OS}-${CONFIG_HASH}-" >> "$GITHUB_OUTPUT"
+          echo "state_key=playlist-state-v1-${RUNNER_OS}-${CONFIG_HASH}-${GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
+          mkdir -p "$RUNNER_TEMP/iptv-config-before"
+          cp -a config/. "$RUNNER_TEMP/iptv-config-before/"
+      - name: Remove generated files from the checkout
+        run: rm -rf -- output release-assets pages-site
+      - name: Restore result history
+        id: restore-state
+        uses: actions/cache/restore@v4
         with:
-          python-version: "3.11"
-          cache: "pip"
-
-      - name: Install python dependencies
+          path: |
+            output/data/cache.gz
+            output/data/frozen.gz
+          key: ${{ steps.source.outputs.state_key }}
+          restore-keys: ${{ steps.source.outputs.state_prefix }}
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+          update-environment: true
+          cache: pipenv
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run IPTV generator
-        run: python main.py
-
-      - name: Generate release metadata
-        id: release_meta
+          python -m pip install --upgrade pip pipenv
+          pipenv --python 3.14
+          pipenv install --deploy
+      - name: Generate playlist results
+        id: generate
         run: |
-          tag="playlist-$(date +%Y%m%d-%H%M%S-utc-plus-0800)"
-          title="IPTV Playlist $tag"
-          echo "tag=$tag" >> $GITHUB_OUTPUT
-          echo "title=$title" >> $GITHUB_OUTPUT
-
+          pipenv run dev
+      - name: Create release metadata
+        id: release
+        run: |
+          mapfile -t release_metadata < <(
+            pipenv run python -c 'from scripts.publish_results import build_release_metadata; from utils.config import config; metadata = build_release_metadata(config.time_zone); print(metadata["tag"]); print(metadata["title"]); print(metadata["generated_at"])'
+          )
+          echo "tag=${release_metadata[0]}" >> "$GITHUB_OUTPUT"
+          echo "title=${release_metadata[1]}" >> "$GITHUB_OUTPUT"
+          echo "generated_at=${release_metadata[2]}" >> "$GITHUB_OUTPUT"
       - name: Prepare public release assets & pages site
         id: assets
         run: |
-          final_file="result.m3u"
-          python scripts/publish_results.py \
+          final_file="$(pipenv run python -c 'from utils.config import config; print(config.final_file)')"
+          pipenv run python scripts/publish_results.py \
             --final-file "$final_file" \
             --destination release-assets \
+            --generated-at "${{ steps.release.outputs.generated_at }}" \
+            --release-tag "${{ steps.release.outputs.tag }}" \
             --pages-destination pages-site \
             --pages-base-url "https://iptv.711933.xyz/"
-          echo "final_file=pages-site/result.m3u" >> $GITHUB_OUTPUT
-
+          echo "final_file=$final_file" >> "$GITHUB_OUTPUT"
       - name: Delete zero-size files before upload
         run: |
           find release-assets -maxdepth 1 -type f -size 0c -delete
-
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: playlist-assets-${{ steps.release_meta.outputs.tag }}
+          name: playlist-assets-${{ steps.release.outputs.tag }}
           path: release-assets
-          if-no-files-found: ignore
+          if-no-files-found: error
           retention-days: 1
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
-
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: pages-site
-
+      - name: Report non-persistent configuration changes
+        run: |
+          if ! diff -qr "$RUNNER_TEMP/iptv-config-before" config >/dev/null; then
+            echo "::warning::The update changed files under config/. These changes are not committed by the workflow."
+            {
+              echo "### Configuration notice"
+              echo
+              echo "The update changed files under \`config/\` (for example through automatic source disabling)."
+              echo "The workflow intentionally did not commit those changes. Use Docker, CLI, or GUI when persistence is needed."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Check that Git history was not changed
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+      - name: Detect reusable result state
+        id: result-state
+        run: |
+          if [[ -f output/data/cache.gz || -f output/data/frozen.gz ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Save result history
+        if: steps.result-state.outputs.available == 'true' && steps.restore-state.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            output/data/cache.gz
+            output/data/frozen.gz
+          key: ${{ steps.source.outputs.state_key }}
+      - name: Add subscription links to summary
+        env:
+          RELEASE_BASE: https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}
+          PAGES_BASE: https://iptv.711933.xyz/
+        run: |
+          {
+            echo "### Published playlist"
+            echo
+            echo "🌐 Pages网页：$PAGES_BASE"
+            echo "📺 订阅地址（永久不变）：${PAGES_BASE}result.m3u"
+            echo
+            echo "Release下载链接："
+            echo "- Release TXT: $RELEASE_BASE/result.txt"
+            if [[ -f release-assets/result.m3u ]]; then
+              echo "- Release M3U: $RELEASE_BASE/result.m3u"
+            fi
+            if [[ -f release-assets/epg.gz ]]; then
+              echo "- Release EPG: $RELEASE_BASE/epg.gz"
+            fi
+            echo
+            echo "Generated from \`${{ steps.assets.outputs.final_file }}\` without creating a Git commit."
+          } >> "$GITHUB_STEP_SUMMARY"
   deploy-pages:
     needs: generate
     runs-on: ubuntu-latest
@@ -93,12 +173,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
   publish-release:
     needs: generate
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
+      actions: read
       contents: write
     steps:
       - name: Download release artifact
@@ -106,18 +186,22 @@ jobs:
         with:
           name: playlist-assets-${{ needs.generate.outputs.tag }}
           path: release-assets
-
       - name: Publish playlist release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ needs.generate.outputs.tag }}
           RELEASE_TITLE: ${{ needs.generate.outputs.release_title }}
           SOURCE_SHA: ${{ needs.generate.outputs.source_sha }}
         run: |
           release_title="$RELEASE_TITLE"
           printf -v release_notes '%s\n\n%s' \
-            "手动生成 IPTV 源，文件保存在本次 Release。" \
-            "网页同步更新至 https://iptv.711933.xyz/"
+            "手动生成的 IPTV 结果，文件保存在本次 Release。" \
+            "Manually generated IPTV results, files stored in this Release."
+          if [[ "$GITHUB_REPOSITORY" == "Guovin/iptv-api" ]]; then
+            printf -v release_notes '%s\n\n%s' \
+              "主仓库结果仅用于功能测试，不保证可用性。实际使用请Fork并运行自己的工作流。" \
+              "The upstream repo results are for testing only. Fork and run your own workflow."
+          fi
           find release-assets -maxdepth 1 -type f -size 0c -delete
           mapfile -d '' local_assets < <(find release-assets -maxdepth 1 -type f -print0 | sort -z)
           gh release create "$RELEASE_TAG" "${local_assets[@]}" \
@@ -126,4 +210,9 @@ jobs:
             --title "$release_title" \
             --notes "$release_notes" \
             --prerelease
-          echo "✅ Release 创建&文件上传完成"
+          find release-assets -maxdepth 1 -type f -printf '%f\n' | sort > /tmp/local-assets.txt
+          gh release view "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json assets \
+            --jq '.assets[].name' | sort > /tmp/remote-assets.txt
+          diff -u /tmp/local-assets.txt /tmp/remote-assets.txt
