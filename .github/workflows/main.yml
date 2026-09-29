@@ -1,6 +1,8 @@
 name: Generate playlist manually
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 19 * * *'   # UTC 19:00 = 北京时间 03:00
 permissions:
   contents: read
   pages: write
@@ -87,7 +89,7 @@ jobs:
             --generated-at "${{ steps.release.outputs.generated_at }}" \
             --release-tag "${{ steps.release.outputs.tag }}" \
             --pages-destination pages-site \
-            --pages-base-url "https://iptv.711933.xyz/"
+            --pages-base-url "https://iptv.922666.xyz/"
           echo "final_file=$final_file" >> "$GITHUB_OUTPUT"
       - name: Delete zero-size files before upload
         run: |
@@ -113,7 +115,7 @@ jobs:
               echo "### Configuration notice"
               echo
               echo "The update changed files under \`config/\` (for example through automatic source disabling)."
-              echo "The workflow intentionally did not commit those changes. Use Docker, CLI, or the GUI when this state must persist."
+              echo "The workflow intentionally did not commit those changes. Use Docker, CLI, or GUI when persistence is needed."
             } >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Check that Git history was not changed
@@ -137,7 +139,7 @@ jobs:
       - name: Add subscription links to summary
         env:
           RELEASE_BASE: https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}
-          PAGES_BASE: https://iptv.711933.xyz/
+          PAGES_BASE: https://iptv.922666.xyz/
         run: |
           {
             echo "### Published playlist"
@@ -196,8 +198,8 @@ jobs:
             "Manually generated IPTV results, files stored in this Release."
           if [[ "$GITHUB_REPOSITORY" == "Guovin/iptv-api" ]]; then
             printf -v release_notes '%s\n\n%s' \
-              "主仓库结果仅用于功能测试，不保证可用性。实际使用请 Fork 项目并运行自己的工作流。" \
-              "The upstream results are for testing only. For actual use, fork and run your own workflow."
+              "主仓库结果仅用于功能测试，不保证可用性。实际使用请Fork并运行自己的工作流。" \
+              "The upstream repo results are for testing only. Fork and run your own workflow."
           fi
           find release-assets -maxdepth 1 -type f -size 0c -delete
           mapfile -d '' local_assets < <(find release-assets -maxdepth 1 -type f -print0 | sort -z)
