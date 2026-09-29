@@ -2,7 +2,7 @@ name: Generate playlist manually
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 19 * * *'   # UTC 19:00 = 北京时间 03:00
+    - cron: '0 19 * * *'   # UTC19点 = 北京时间 03:00
 permissions:
   contents: read
   pages: write
@@ -89,7 +89,7 @@ jobs:
             --generated-at "${{ steps.release.outputs.generated_at }}" \
             --release-tag "${{ steps.release.outputs.tag }}" \
             --pages-destination pages-site \
-            --pages-base-url "https://iptv.922666.xyz/"
+            --pages-base-url "https://iptv.711933.xyz/"
           echo "final_file=$final_file" >> "$GITHUB_OUTPUT"
       - name: Delete zero-size files before upload
         run: |
@@ -101,51 +101,24 @@ jobs:
           path: release-assets
           if-no-files-found: error
           retention-days: 1
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: pages-site
-      - name: Report non-persistent configuration changes
-        run: |
-          if ! diff -qr "$RUNNER_TEMP/iptv-config-before" config >/dev/null; then
-            echo "::warning::The update changed files under config/. These changes are not committed by the workflow."
-            {
-              echo "### Configuration notice"
-              echo
-              echo "The update changed files under \`config/\` (for example through automatic source disabling)."
-              echo "The workflow intentionally did not commit those changes. Use Docker, CLI, or GUI when persistence is needed."
-            } >> "$GITHUB_STEP_SUMMARY"
-          fi
-      - name: Check that Git history was not changed
-        env:
-          SOURCE_SHA: ${{ steps.source.outputs.sha }}
-        run: test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-      - name: Detect reusable result state
-        id: result-state
-        run: |
-          if [[ -f output/data/cache.gz || -f output/data/frozen.gz ]]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Save result history
-        if: steps.result-state.outputs.available == 'true' && steps.restore-state.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            output/data/cache.gz
-            output/data/frozen.gz
-          key: ${{ steps.source.outputs.state_key }}
+      # ==========【下面两行被注释，不上传Pages制品，不会触发pages-build-deployment】==========
+      # - name: Setup Pages
+      #   uses: actions/configure-pages@v5
+      # - name: Upload Pages artifact
+      #   uses: actions/upload-pages-artifact@v3
+      #   with:
+      #     path: pages-site
+      # ======================================================================================
       - name: Add subscription links to summary
         env:
           RELEASE_BASE: https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}
-          PAGES_BASE: https://iptv.922666.xyz/
+          PAGES_BASE: https://iptv.711933.xyz/
         run: |
           {
             echo "### Published playlist"
             echo
             echo "🌐 Pages网页：$PAGES_BASE"
-            echo "📺 订阅地址（永久不变）：${PAGES_BASE}result.m3u"
+            echo "📺 订阅地址：${PAGES_BASE}result.m3u"
             echo
             echo "Release下载链接："
             echo "- Release TXT: $RELEASE_BASE/result.txt"
@@ -156,22 +129,23 @@ jobs:
               echo "- Release EPG: $RELEASE_BASE/epg.gz"
             fi
             echo
-            echo "Generated from \`${{ steps.assets.outputs.final_file }}\` without creating a Git commit."
+            echo "⚠️ 当前：Pages上传步骤已注释，网页不会更新！仅生成Release备份"
           } >> "$GITHUB_STEP_SUMMARY"
-  deploy-pages:
-    needs: generate
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+  # deploy-pages job 也一并注释，因为没有pages制品，这个job已经没有意义
+  # deploy-pages:
+  #   needs: generate
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   permissions:
+  #     pages: write
+  #     id-token: write
+  #   environment:
+  #     name: github-pages
+  #     url: ${{ steps.deployment.outputs.page_url }}
+  #   steps:
+  #     - name: Deploy to GitHub Pages
+  #       id: deployment
+  #       uses: actions/deploy-pages@v4
   publish-release:
     needs: generate
     runs-on: ubuntu-latest
@@ -194,13 +168,8 @@ jobs:
         run: |
           release_title="$RELEASE_TITLE"
           printf -v release_notes '%s\n\n%s' \
-            "手动生成的 IPTV 结果，文件保存在本次 Release。" \
-            "Manually generated IPTV results, files stored in this Release."
-          if [[ "$GITHUB_REPOSITORY" == "Guovin/iptv-api" ]]; then
-            printf -v release_notes '%s\n\n%s' \
-              "主仓库结果仅用于功能测试，不保证可用性。实际使用请Fork并运行自己的工作流。" \
-              "The upstream repo results are for testing only. Fork and run your own workflow."
-          fi
+            "手动生成 IPTV 源，文件保存在本次 Release。" \
+            "Pages网页部署步骤已注释，本次不会更新网页。"
           find release-assets -maxdepth 1 -type f -size 0c -delete
           mapfile -d '' local_assets < <(find release-assets -maxdepth 1 -type f -print0 | sort -z)
           gh release create "$RELEASE_TAG" "${local_assets[@]}" \
@@ -212,6 +181,5 @@ jobs:
           find release-assets -maxdepth 1 -type f -printf '%f\n' | sort > /tmp/local-assets.txt
           gh release view "$RELEASE_TAG" \
             --repo "$GITHUB_REPOSITORY" \
-            --json assets \
-            --jq '.assets[].name' | sort > /tmp/remote-assets.txt
+            --json '.assets[].name' | jq -r '.assets[].name' | sort > /tmp/remote-assets.txt
           diff -u /tmp/local-assets.txt /tmp/remote-assets.txt
