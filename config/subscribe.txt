@@ -7,8 +7,7 @@ https://guovin.github.io/iptv-api/result.m3u
 https://raw.githubusercontent.com/vbskycn/iptv/refs/heads/master/tv/iptv4.m3u
 https://raw.githubusercontent.com/zzgpy1/ITV/refs/heads/main/output/tv.m3u
 https://raw.githubusercontent.com/CCSH/IPTV/refs/heads/main/live.m3u
-http://193.123.86.190:14888/TV/iptv.php
-https://raw.githubusercontent.com/Kimentanm/aptv/refs/heads/master/m3u/iptv.m3u
+http://47.120.41.246:8025/vip/jar/zb.php
 
 
 
